@@ -1,68 +1,82 @@
-# Prerequisites
-*.d
+# ============================================================
+# 目标：仓库里只保留源码与构建脚本
+#       （include/ source/ test/ CMakeLists.txt Dockerfile README LICENSE）
+# ============================================================
 
-# Compiled Object files
-*.slo
-*.lo
-*.o
-*.obj
-
-# Precompiled Headers
-*.gch
-*.pch
-
-# Linker files
-*.ilk
-
-# Debugger Files
-*.pdb
-
-# Compiled Dynamic libraries
-*.so
-*.dylib
-*.dll
-*.so.*
-
-# Fortran module files
-*.mod
-*.smod
-
-# Compiled Static libraries
-*.lai
-*.la
-*.a
-*.lib
-
-# Executables
-*.exe
-*.out
-*.app
-
-# Build directories
+# ---------------- 构建目录 ----------------
 build/
 Build/
 build-*/
+cmake-build-*/
+out/
 
-# CMake generated files
+# ---------------- 编译产物 ----------------
+*.o
+*.obj
+*.d
+*.gch
+*.pch
+*.dwo
+*.a
+*.lib
+*.so
+*.so.*
+*.dylib
+*.dll
+*.exe
+*.out
+*.app
+*.ilk
+*.pdb
+*.dSYM/
+
+# ---------------- 在源码目录内构建时产生的文件 ----------------
 CMakeFiles/
 CMakeCache.txt
 cmake_install.cmake
-Makefile
 install_manifest.txt
 compile_commands.json
+CTestTestfile.cmake
+Testing/
+Makefile
+build.ninja
+.ninja_deps
+.ninja_log
 
-# Temporary files
+# ---------------- 测试覆盖率 ----------------
+*.gcda
+*.gcno
+*.gcov
+*.profraw
+*.profdata
+
+# ---------------- 模型与数据（不要提交权重文件） ----------------
+# 开头的 / 表示只匹配仓库根目录下的 data/，
+# 否则会把 include/data/、source/data/ 这些源码目录一起忽略掉
+/data/
+*.pnnx.param
+*.pnnx.bin
+*.onnx
+*.pt
+*.pth
+
+# ---------------- IDE / 编辑器 ----------------
+.idea/
+.vscode/
+.clangd/
+.cache/
+*.swp
+*.swo
+*~
+
+# ---------------- 系统文件 ----------------
+.DS_Store
+Thumbs.db
+
+# ---------------- 临时文件 / 日志 ----------------
 *.tmp
 *.log
 *.bak
-*.swp
 
-# vcpkg
+# ---------------- 第三方包管理 ----------------
 vcpkg_installed/
-
-# debug information files
-*.dwo
-
-# test output & cache
-Testing/
-.cache/
