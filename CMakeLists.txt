@@ -21,6 +21,7 @@ find_package(spdlog REQUIRED)
 # STATIC 表示生成 build/libinfer_core.a。
 add_library(infer_core STATIC
     source/data/tensor.cpp
+    source/layer/ReLU_Layer.cpp
 )
 
 #--------------------------------------------------------------------------
@@ -30,7 +31,7 @@ add_library(infer_core STATIC
 # 链接阶段:一堆 .o + 库 → 最终可执行程序
 #    找函数/符号的机器实现，只要库文件(.a/.so),不需要头文件
 #
-# infer_core 是静态库，包含了 tensor.cpp 的机器码。库文件需要在链接时才能找到。
+# infer_core 是静态库，包含了 tensor.cpp、ReLU_Layer.cpp 的机器码。库文件需要在链接时才能找到。
 #--------------------------------------------------------------------------------
 # 给名叫infer_core的库设置头文件搜索路径。
 # target_include_directories(目标名 [访问权限] 路径...)
@@ -54,25 +55,30 @@ target_link_libraries(infer_core
     PUBLIC ${ARMADILLO_LIBRARIES} spdlog::spdlog)
 
 # 只给 infer_core 加编译警告选项。
-# -Wall 常用警告，-Wextra 更多警告；PRIVATE 表示不传给 test_tensor。
+# -Wall 常用警告，-Wextra 更多警告；PRIVATE 表示不传给 infer_tests。
 target_compile_options(infer_core PRIVATE -Wall -Wextra)
 
-# 开启 CMake 的测试功能，之后 ctest 才能发现用例，必须写在 add_test 之前。
+# 开启 CMake 的测试功能，之后 ctest 才能发现用例，必须写在测试注册之前。
 enable_testing()
 
 # GTest 是 GoogleTest 的 CMake 包名（不是 googleTest）。
 # 找到后可用 GTest::gtest（库）和 GTest::gtest_main（自带 main 函数）。
 find_package(GTest REQUIRED)
 
-# 把 test/test_tensor.cpp 编译成可执行文件，产物在 build/test_tensor。
-add_executable(test_tensor test/test_tensor.cpp)
+# 编译所有测试源文件（Tensor + ReLU），产物为 build/infer_tests
+add_executable(infer_tests
+    test/test_tensor.cpp
+    test/test_ReLU_layer.cpp
+)
 
 # 测试程序需要三样东西：
 # 1) infer_core         —— 被测的 Tensor 实现
 # 2) GTest::gtest       —— TEST / EXPECT_* 等宏
 # 3) GTest::gtest_main  —— gtest 自带 main()，不用自己写
-# PRIVATE：这些依赖只服务于 test_tensor，不向外传递。
-target_link_libraries(test_tensor PRIVATE infer_core GTest::gtest GTest::gtest_main)
+# PRIVATE：这些依赖只服务于 infer_tests，不向外传递。
+target_link_libraries(infer_tests PRIVATE infer_core GTest::gtest GTest::gtest_main)
 
-# 注册测试用例，之后 ctest --test-dir build 会自动运行它。
-add_test(NAME test_tensor COMMAND test_tensor)
+# 让 CTest 自动发现 gtest 里的每个 TEST()，逐个注册为独立用例。
+# 构建后会运行一次 ./infer_tests --gtest_list_tests 来枚举用例。
+include(GoogleTest)
+gtest_discover_tests(infer_tests)
