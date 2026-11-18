@@ -24,9 +24,9 @@
 
 namespace {
 
-using infer::tensor;
+using infer::Tensor;
 TEST(TensorTest, ConstructWithShape) {
-  tensor<float> t(2, 3, 4);
+  Tensor<float> t(2, 3, 4);
 
   //u表示unsigned int因为t.channels()返回size_t
   EXPECT_EQ(t.channels(), 2u);
@@ -44,16 +44,16 @@ TEST(TensorTest, ConstructWithShape) {
 }
 
 TEST(TensorTest, ConstructWithShapes) {
-  tensor<float> t(std::vector<size_t>{1, 2, 3});
+  Tensor<float> t(std::vector<size_t>{1, 2, 3});
   EXPECT_EQ(t.shapes(), (std::vector<size_t>{1, 2, 3}));
 
   // 执行某段代码，必须抛出指定类型的异常
   // 维度个数不对应该抛异常
-  EXPECT_THROW(tensor<float>(std::vector<size_t>{1, 2}), std::invalid_argument);
+  EXPECT_THROW(Tensor<float>(std::vector<size_t>{1, 2}), std::invalid_argument);
 }
 
 TEST(TensorTest, AtAndIndexFollowMemoryLayout) {
-  tensor<float> t(2, 2, 3);
+  Tensor<float> t(2, 2, 3);
   for (size_t c = 0; c < t.channels(); ++c) {
     for (size_t r = 0; r < t.rows(); ++r) {
       for (size_t col = 0; col < t.cols(); ++col) {
@@ -78,7 +78,7 @@ TEST(TensorTest, AtAndIndexFollowMemoryLayout) {
 }
 
 TEST(TensorTest, FillAndChannelPtr) {
-  tensor<float> t(2, 2, 2);
+  Tensor<float> t(2, 2, 2);
   t.Fill(3.0f);
   for (size_t i = 0; i < t.size(); ++i) {
     EXPECT_FLOAT_EQ(t.index(i), 3.0f);
@@ -95,7 +95,7 @@ TEST(TensorTest, FillAndChannelPtr) {
 }
 
 TEST(TensorTest, PaddingAddsBorder) {
-  tensor<float> t(1, 2, 2);
+  Tensor<float> t(1, 2, 2);
   t.Fill(std::vector<float>{1, 2, 3, 4});
 
   t.Padding(1, 1, -1.0f);
@@ -116,7 +116,7 @@ TEST(TensorTest, PaddingAddsBorder) {
 }
 
 TEST(TensorTest, FlattenAndReView) {
-  tensor<float> t(2, 2, 2);
+  Tensor<float> t(2, 2, 2);
   t.Fill(std::vector<float>{1, 2, 3, 4, 5, 6, 7, 8});
 
   t.Flatten();
@@ -135,19 +135,19 @@ TEST(TensorTest, FlattenAndReView) {
 }
 
 TEST(TensorTest, RawPtrOfEmptyTensorIsNull) {
-  tensor<float> empty;
+  Tensor<float> empty;
   EXPECT_TRUE(empty.empty());
   EXPECT_EQ(empty.raw_ptr(), nullptr);
 
-  const tensor<float>& const_empty = empty;
+  const Tensor<float>& const_empty = empty;
   EXPECT_EQ(const_empty.raw_ptr(), nullptr);
 }
 
 TEST(TensorTest, CloneIsDeepCopy) {
-  tensor<float> t(1, 1, 3);
+  Tensor<float> t(1, 1, 3);
   t.Fill(std::vector<float>{1, 2, 3});
 
-  tensor<float> copy = t.Cloqne();
+  Tensor<float> copy = t.Clone();
   EXPECT_EQ(copy.shapes(), t.shapes());
   EXPECT_FLOAT_EQ(copy.at(0, 0, 0), 1.0f);
 

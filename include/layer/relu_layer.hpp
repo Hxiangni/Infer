@@ -1,4 +1,4 @@
-// include/layer/RelU_layer.hpp
+// include/layer/relu_layer.hpp
 #pragma once                       // 防止重复包含
 
 #include <memory>
@@ -10,13 +10,13 @@
 
 namespace infer {
 
-class ReLU_layer : public Layer {
+class ReluLayer : public Layer {
  public:
-  explicit ReLU_layer(std::string name = "ReLU")
+  explicit ReluLayer(std::string name = "ReLU")
       : Layer(std::move(name)) {}
 
-  std::vector<std::shared_ptr<Tensor>> Forward(
-      const std::vector<std::shared_ptr<Tensor>>& inputs) override;
+  std::vector<std::shared_ptr<TensorF32>> Forward(
+      const std::vector<std::shared_ptr<TensorF32>>& inputs) override;
 };
 
 }  // namespace infer

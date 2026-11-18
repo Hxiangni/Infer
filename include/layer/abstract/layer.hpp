@@ -1,28 +1,33 @@
-#include <string>
-#include <vector>
+#pragma once
+
 #include <memory>
+#include <string>
+#include <utility>  // std::move
+#include <vector>
+
 #include "data/tensor.hpp"
-namespace infer{
-using Tensor = tensor<float>;
 
-class Layer{
-public:
-    explicit Layer(std::string name) : name_(std::move(name)){}
+namespace infer {
 
-    virtual ~Layer()=default;
+using TensorF32 = Tensor<float>;
 
-    //输入若干tensor，返回若干tensor;子类实现具体计算
-    //vector放的是Tensor的智能指针,为什么用shared_ptr<Tensor>?
-    //因为一个Tensor可能同时是多个结点的输入,生命周期不归于单个算子
-    //为什么输出也是vector:ReLU是1进1出，Add等多进多出接口一开是就留好
-    virtual std::vector<std::shared_ptr<Tensor>> Forward(
-        const std::vector<std::shared_ptr<Tensor>>& inputs) = 0;//纯虚函数
+class Layer {
+ public:
+  explicit Layer(std::string name) : name_(std::move(name)) {}
 
-    const std::string& get_name() const {return name_;}
+  virtual ~Layer() = default;
 
+  // 输入若干 tensor，返回若干 tensor；子类实现具体计算
+  // vector 放的是 TensorF32 的智能指针,为什么用 shared_ptr<TensorF32>?
+  // 因为一个 TensorF32 可能同时是多个结点的输入,生命周期不归于单个算子
+  // 为什么输出也是vector:ReLU是1进1出，Add等多进多出接口一开是就留好
+  virtual std::vector<std::shared_ptr<TensorF32>> Forward(
+      const std::vector<std::shared_ptr<TensorF32>>& inputs) = 0;  // 纯虚函数
 
-private:
-    std::string name_;
-};//class Layer
+  const std::string& name() const { return name_; }
 
-}//namespace infer
+ private:
+  std::string name_;
+};  // class Layer
+
+}  // namespace infer

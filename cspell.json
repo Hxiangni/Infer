@@ -1,0 +1,16 @@
+{
+  "version": "0.2",
+  "language": "en",
+  "words": [
+    "relu",
+    "onnx",
+    "pnnx",
+    "fcube",
+    "gcda",
+    "gcno",
+    "gcov",
+    "profdata",
+    "profraw",
+    "wextra"
+  ],
+}

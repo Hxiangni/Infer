@@ -29,16 +29,16 @@ void CheckShape(bool condition, const std::string& message) {
 }  // namespace匿名命名空间结束
 
 template <typename T>
-tensor<T>::tensor(size_t channels, size_t rows, size_t cols)
+Tensor<T>::Tensor(size_t channels, size_t rows, size_t cols)
     : channels_(channels), rows_(rows), cols_(cols) {
       //assign全部清理后重新申请内存
   data_.assign(channels * rows * cols, T{});
 }
 
 template <typename T>
-tensor<T>::tensor(const std::vector<size_t>& shapes) {
+Tensor<T>::Tensor(const std::vector<size_t>& shapes) {
   CheckShape(shapes.size() == 3,
-             "tensor(const std::vector<size_t>&): shapes 必须是 {channels, rows, cols}");
+             "Tensor(const std::vector<size_t>&): shapes 必须是 {channels, rows, cols}");
   channels_ = shapes[0];
   rows_ = shapes[1];
   cols_ = shapes[2];
@@ -48,47 +48,47 @@ tensor<T>::tensor(const std::vector<size_t>& shapes) {
 }
 
 template <typename T>
-T& tensor<T>::at(size_t channel, size_t row, size_t col) {
+T& Tensor<T>::at(size_t channel, size_t row, size_t col) {
   CheckShape(channel < channels_ && row < rows_ && col < cols_,
-             "tensor::at: 下标越界");
+             "Tensor::at: 下标越界");
   return data_[Offset(channel, row, col)];
 }
 
 //const对象肯定要返回const引用啊不返回const被改变了怎么办
 template <typename T>
-const T& tensor<T>::at(size_t channel, size_t row, size_t col) const {
+const T& Tensor<T>::at(size_t channel, size_t row, size_t col) const {
   CheckShape(channel < channels_ && row < rows_ && col < cols_,
              "tensor::at: 下标越界");
   return data_[Offset(channel, row, col)];
 }
 
 template <typename T>
-T& tensor<T>::index(size_t offset) {
+T& Tensor<T>::index(size_t offset) {
   CheckShape(offset < data_.size(), "tensor::index: 下标越界");
   return data_[offset];
 }
 
 template <typename T>
-const T& tensor<T>::index(size_t offset) const {
+const T& Tensor<T>::index(size_t offset) const {
   CheckShape(offset < data_.size(), "tensor::index: 下标越界");
   return data_[offset];
 }
 
 template <typename T>
-T* tensor<T>::channel_ptr(size_t channel) {
+T* Tensor<T>::channel_ptr(size_t channel) {
   //如果这个条件不成立，就抛异常
   CheckShape(channel < channels_, "tensor::channel_ptr: 通道下标越界");
   return data_.data() + channel * PlaneSize();
 }
 
 template <typename T>
-const T* tensor<T>::channel_ptr(size_t channel) const {
+const T* Tensor<T>::channel_ptr(size_t channel) const {
   CheckShape(channel < channels_, "tensor::channel_ptr: 通道下标越界");
   return data_.data() + channel * PlaneSize();
 }
 
 template <typename T>
-void tensor<T>::Fill(T value) {
+void Tensor<T>::Fill(T value) {
   //std::fill吧一个区域内的所有元素都赋值为value
   std::fill(data_.begin(), data_.end(), value);
 
@@ -106,14 +106,14 @@ void tensor<T>::Fill(T value) {
 }
 
 template <typename T>
-void tensor<T>::Fill(const std::vector<T>& values) {
+void Tensor<T>::Fill(const std::vector<T>& values) {
   CheckShape(values.size() == data_.size(),
              "tensor::Fill: values 的元素个数必须等于张量元素个数");
   data_ = values;
 }
 
 template <typename T>
-void tensor<T>::Padding(size_t pad_row, size_t pad_col, T padding_value) {
+void Tensor<T>::Padding(size_t pad_row, size_t pad_col, T padding_value) {
   const size_t new_rows = rows_ + 2 * pad_row;
   const size_t new_cols = cols_ + 2 * pad_col;
 
@@ -136,7 +136,7 @@ void tensor<T>::Padding(size_t pad_row, size_t pad_col, T padding_value) {
 }
 
 template <typename T>
-void tensor<T>::Flatten() {
+void Tensor<T>::Flatten() {
   channels_ = 1;
   rows_ = 1;
   cols_ = data_.size();
@@ -144,7 +144,7 @@ void tensor<T>::Flatten() {
 
 //换视角解释vector
 template <typename T>
-void tensor<T>::ReView(size_t channels, size_t rows, size_t cols) {
+void Tensor<T>::ReView(size_t channels, size_t rows, size_t cols) {
   CheckShape(channels * rows * cols == data_.size(),
              "tensor::ReView: 新的维度乘积必须等于原元素个数");
   channels_ = channels;
@@ -153,7 +153,7 @@ void tensor<T>::ReView(size_t channels, size_t rows, size_t cols) {
 }
 
 template <typename T>
-void tensor<T>::ReRawShape(const std::vector<size_t>& shapes) {
+void Tensor<T>::ReRawShape(const std::vector<size_t>& shapes) {
   CheckShape(shapes.size() == 3,
              "tensor::ReRawShape: shapes 必须是 {channels, rows, cols}");
   ReView(shapes[0], shapes[1], shapes[2]);
@@ -164,8 +164,8 @@ void tensor<T>::ReRawShape(const std::vector<size_t>& shapes) {
  * 本模板类采用声明与实现分离的写法：头文件放声明，实现写在 cpp 文件中。
  * 因此若要在其他 cpp 文件中使用该模板类，需要在 cpp 文件中进行显式实例化。
  */
-template class tensor<float>;
-template class tensor<double>;
+template class Tensor<float>;
+template class Tensor<double>;
 
 }  // namespace infer
 

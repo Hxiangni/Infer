@@ -1,5 +1,5 @@
-// source/layer/RelU_layer.cpp
-#include "layer/RelU_layer.hpp"
+// source/layer/relu_layer.cpp
+#include "layer/relu_layer.hpp"
 
 #include <stdexcept>
 #include <utility>
@@ -9,9 +9,9 @@ namespace infer {
 //逻辑就是申请一大片内存inputs.size()
 //然后根据ReLU的规则遍历inputs然后赋值到申请的数组中
 //大致类比成swap简单交换,output就是一个tensor副本，就是swap的哪个temp
-std::vector<std::shared_ptr<Tensor>> ReLU_layer::Forward(
-    const std::vector<std::shared_ptr<Tensor>>& inputs) {
-  std::vector<std::shared_ptr<Tensor>> outputs;
+std::vector<std::shared_ptr<TensorF32>> ReluLayer::Forward(
+    const std::vector<std::shared_ptr<TensorF32>>& inputs) {
+  std::vector<std::shared_ptr<TensorF32>> outputs;
 
   //提前开辟好内存
   //因为后面每次for都需要push_back一个tensor到vector中
@@ -22,10 +22,10 @@ std::vector<std::shared_ptr<Tensor>> ReLU_layer::Forward(
   for (const auto& input : inputs) {
     //检查空值
     if (input == nullptr) {
-      throw std::invalid_argument("ReLU_layer::Forward: 输入不能为空");
+      throw std::invalid_argument("ReluLayer::forward: 输入不能为空");
     }
 
-    auto output = std::make_shared<Tensor>(input->channels(),
+    auto output = std::make_shared<TensorF32>(input->channels(),
                                            input->rows(),
                                            input->cols());
 

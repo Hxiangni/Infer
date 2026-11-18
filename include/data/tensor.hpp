@@ -11,22 +11,22 @@ namespace infer {
 //   data_[(c * rows_ + r) * cols_ + col]
 // 同一通道内是行优先（row-major）排列，和 OpenCV / Armadillo 的 Mat 一致。
 //
-// 注意：这是模板类，成员函数的实现放在 tensor.cpp 里，
+// 注意：这是模板类，成员函数的实现放在 Tensor.cpp 里，
 // 并在文件末尾对 float / double 做了显式实例化（explicit instantiation）。
-// 如果你想用 tensor<int>，需要在 tensor.cpp 里再补一行 template class tensor<int>;
+// 如果你想用 Tensor<int>，需要在 Tensor.cpp 里再补一行 template class Tensor<int>;
 // 否则会链接报错。等 Tensor 稳定下来，建议改为固定 float，和参考项目一致。
 template <typename T>
-class tensor {
+class Tensor {
  public:
   // 默认构造：空张量，shape 为 0×0×0
-  tensor() = default;
+  Tensor() = default;
 
   // 按维度构造，元素默认值初始化为 T{}
   // 传入int编译器会做隐式整型转换
-  tensor(size_t channels, size_t rows, size_t cols);
+  Tensor(size_t channels, size_t rows, size_t cols);
 
   // 按 {channels, rows, cols} 构造
-  explicit tensor(const std::vector<size_t>& shapes);
+  explicit Tensor(const std::vector<size_t>& shapes);
 
   /**
    * 拷贝 / 移动：交给编译器生成即可（vector 成员会正确深拷贝）
@@ -35,12 +35,12 @@ class tensor {
    * int* 拷贝构造就是复制地址->浅拷贝
    * vector就是调用vector的拷贝构造
    */
-  tensor(const tensor& other) = default;
+  Tensor(const Tensor& other) = default;
   //默认移动构造
-  tensor(tensor&& other) noexcept = default;
-  tensor& operator=(const tensor& other) = default;
-  tensor& operator=(tensor&& other) noexcept = default;
-  ~tensor() = default;
+  Tensor(Tensor&& other) noexcept = default;
+  Tensor& operator=(const Tensor& other) = default;
+  Tensor& operator=(Tensor&& other) noexcept = default;
+  ~Tensor() = default;
 
   // ---- 形状 ----
   size_t channels() const { return channels_; }
@@ -56,8 +56,8 @@ class tensor {
    * 问题：为什么成员函数末尾加个 const 就能重载？
    *
    * 1) 非静态成员函数有一个隐含对象参数：
-   *      T& at(...)              -> 隐含参数 tensor<T>&
-   *      const T& at(...) const  -> 隐含参数 const tensor<T>&
+   *      T& at(...)              -> 隐含参数 Tensor<T>&
+   *      const T& at(...) const  -> 隐含参数 const Tensor<T>&
    *    两个函数的隐含参数类型不同，所以构成重载。
    *    这个隐含参数的作用是,根据隐含参数来选择不同的重载函数
    *
@@ -65,8 +65,8 @@ class tensor {
    *      this只是一个表达式，它是语言内置的关键字表达式，在不同成员函数里，this 这个表达式的类型本来就不同！！！
    *      表达式有类型 有值类别--在不同 cv 限定的成员函数里，this 类型不同
    * 
-   *      非 const 成员：this 的类型是 tensor<T>*，值类别是 prvalue
-   *      const 成员：  this 的类型是 const tensor<T>*，值类别是 prvalue
+   *      非 const 成员：this 的类型是 Tensor<T>*，值类别是 prvalue
+   *      const 成员：  this 的类型是 const Tensor<T>*，值类别是 prvalue
    * 
    *     this 永远是 prvalue（一个地址值，不是变量），两种情况都一样；
    *     区别只在指向的对象带不带 const；
@@ -135,7 +135,7 @@ class tensor {
   void ReRawShape(const std::vector<size_t>& shapes);
 
   // 深拷贝
-  tensor Cloqne() const { return *this; }
+  Tensor Clone() const { return *this; }
 
  private:
   size_t Offset(size_t channel, size_t row, size_t col) const {

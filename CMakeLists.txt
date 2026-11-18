@@ -18,10 +18,11 @@ find_package(spdlog REQUIRED)
 # infer_core 是自定义名字：infer 是项目名，core 表示"核心库"。
 # 做成库而不是直接编译成可执行文件，是因为之后的 test/demo/benchmark
 # 都要复用同一份 Tensor 代码——编译一次，多处链接。
-# STATIC 表示生成 build/libinfer_core.a。
+# STATIC 表示生成 build/lib_infer_core.a。
 add_library(infer_core STATIC
     source/data/tensor.cpp
-    source/layer/ReLU_Layer.cpp
+    source/layer/relu_layer.cpp
+    source/layer/sigmoid_layer.cpp
 )
 
 #--------------------------------------------------------------------------
@@ -31,7 +32,7 @@ add_library(infer_core STATIC
 # 链接阶段:一堆 .o + 库 → 最终可执行程序
 #    找函数/符号的机器实现，只要库文件(.a/.so),不需要头文件
 #
-# infer_core 是静态库，包含了 tensor.cpp、ReLU_Layer.cpp 的机器码。库文件需要在链接时才能找到。
+# infer_core 是静态库，包含了 tensor.cpp、relu_layer.cpp、sigmoid_layer.cpp 的机器码。库文件需要在链接时才能找到。
 #--------------------------------------------------------------------------------
 # 给名叫infer_core的库设置头文件搜索路径。
 # target_include_directories(目标名 [访问权限] 路径...)
@@ -42,9 +43,8 @@ add_library(infer_core STATIC
 # 在编译infer_core的时候给编译器加上armadillo的头文件路径
 # 这个路径**只给 infer_core 自己编译用**；以后别的程序（demo）
 # 链接 infer_core，不会自动拿到 armadillo 的头路径。
-target_include_directories(infer_core
-    PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
-    SYSTEM PUBLIC ${ARMADILLO_INCLUDE_DIRS})
+target_include_directories(infer_core SYSTEM PUBLIC ${ARMADILLO_INCLUDE_DIRS})
+target_include_directories(infer_core PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include)
 
 # infer_core要连接的东西
 # 告诉链接器：**把这些库的符号拿进来解析**
@@ -68,7 +68,8 @@ find_package(GTest REQUIRED)
 # 编译所有测试源文件（Tensor + ReLU），产物为 build/infer_tests
 add_executable(infer_tests
     test/test_tensor.cpp
-    test/test_ReLU_layer.cpp
+    test/test_relu_layer.cpp
+    test/test_sigmoid_layer.cpp
 )
 
 # 测试程序需要三样东西：

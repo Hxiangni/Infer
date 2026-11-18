@@ -5,19 +5,19 @@
 #include <vector>
 
 #include "data/tensor.hpp"
-#include "layer/RelU_layer.hpp"
+#include "layer/relu_layer.hpp"
 
 namespace {
 
-using infer::ReLU_layer;
-using infer::Tensor;
+using infer::ReluLayer;
+using infer::TensorF32;
 
 // 基础语义：正数不变，负数（含 0）变 0
-TEST(ReLULayerTest, AppliesElementwise) {
-  auto input = std::make_shared<Tensor>(1, 2, 3);
+TEST(ReluLayerTest, AppliesElementwise) {
+  auto input = std::make_shared<TensorF32>(1, 2, 3);
   input->Fill(std::vector<float>{-2.0f, -1.0f, 0.0f, 1.0f, 2.0f, 3.0f});
 
-  ReLU_layer relu;
+  ReluLayer relu;
   auto outputs = relu.Forward({input});
 
   ASSERT_EQ(outputs.size(), 1u);
@@ -35,11 +35,11 @@ TEST(ReLULayerTest, AppliesElementwise) {
 }
 
 // 输入不能被修改（图里一个张量可能被多个算子共享）
-TEST(ReLULayerTest, DoesNotModifyInput) {
-  auto input = std::make_shared<Tensor>(1, 1, 3);
+TEST(ReluLayerTest, DoesNotModifyInput) {
+  auto input = std::make_shared<TensorF32>(1, 1, 3);
   input->Fill(std::vector<float>{-1.0f, 2.0f, -3.0f});
 
-  ReLU_layer relu;
+  ReluLayer relu;
   auto outputs = relu.Forward({input});
 
   EXPECT_FLOAT_EQ(input->at(0, 0, 0), -1.0f);
@@ -51,11 +51,11 @@ TEST(ReLULayerTest, DoesNotModifyInput) {
 }
 
 // 多通道：每个通道独立处理
-TEST(ReLULayerTest, HandlesMultipleChannels) {
-  auto input = std::make_shared<Tensor>(2, 1, 2);
+TEST(ReluLayerTest, HandlesMultipleChannels) {
+  auto input = std::make_shared<TensorF32>(2, 1, 2);
   input->Fill(std::vector<float>{-1.0f, 2.0f, 3.0f, -4.0f});
 
-  ReLU_layer relu;
+  ReluLayer relu;
   auto outputs = relu.Forward({input});
 
   ASSERT_EQ(outputs.size(), 1u);
@@ -68,14 +68,14 @@ TEST(ReLULayerTest, HandlesMultipleChannels) {
 }
 
 // 一次传入多个张量，输出数量和顺序要对应
-TEST(ReLULayerTest, HandlesMultipleInputs) {
-  auto a = std::make_shared<Tensor>(1, 1, 2);
+TEST(ReluLayerTest, HandlesMultipleInputs) {
+  auto a = std::make_shared<TensorF32>(1, 1, 2);
   a->Fill(std::vector<float>{-1.0f, 2.0f});
 
-  auto b = std::make_shared<Tensor>(2, 1, 1);
+  auto b = std::make_shared<TensorF32>(2, 1, 1);
   b->Fill(std::vector<float>{-3.0f, 4.0f});
 
-  ReLU_layer relu;
+  ReluLayer relu;
   auto outputs = relu.Forward({a, b});
 
   ASSERT_EQ(outputs.size(), 2u);
@@ -89,24 +89,24 @@ TEST(ReLULayerTest, HandlesMultipleInputs) {
 }
 
 // 空输入：返回空 vector，不崩溃
-TEST(ReLULayerTest, EmptyInputs) {
-  ReLU_layer relu;
+TEST(ReluLayerTest, EmptyInputs) {
+  ReluLayer relu;
   EXPECT_TRUE(relu.Forward({}).empty());
 }
 
 // 空指针：按当前实现应该抛 std::invalid_argument
-TEST(ReLULayerTest, NullInputThrows) {
-  ReLU_layer relu;
+TEST(ReluLayerTest, NullInputThrows) {
+  ReluLayer relu;
   EXPECT_THROW(relu.Forward({nullptr}), std::invalid_argument);
 }
 
 // 名字：默认值和自定义值
-TEST(ReLULayerTest, Name) {
-  ReLU_layer default_relu;
-  EXPECT_EQ(default_relu.get_name(), "ReLU");
+TEST(ReluLayerTest, Name) {
+  ReluLayer default_relu;
+  EXPECT_EQ(default_relu.name(), "ReLU");
 
-  ReLU_layer custom_relu("my_relu");
-  EXPECT_EQ(custom_relu.get_name(), "my_relu");
+  ReluLayer custom_relu("my_relu");
+  EXPECT_EQ(custom_relu.name(), "my_relu");
 }
 
 }  // namespace
